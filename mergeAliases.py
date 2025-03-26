@@ -1,6 +1,7 @@
 import os
 from csv import DictReader, writer
 import json
+import argparse
 
 import regex
 fakeusr_rex = regex.compile(r'\A[A-Z]{8}$')
@@ -29,7 +30,21 @@ THR_MAX = 20
 
 unmask = {}
 
-dataPath = os.path.abspath('../data')
+# Set up argument parser
+parser = argparse.ArgumentParser(description='Process a file from a given path')
+parser.add_argument('file_path', type=str, help='Path to the file to process')
+
+# Parse arguments
+args = parser.parse_args()
+
+# Access the file path
+file_path = args.file_path
+
+# Now you can use the file path
+print(f"Processing directory: {file_path}")
+
+#dataPath = os.path.abspath('../data/')
+dataPath = os.path.abspath(file_path)
 
 w_log = writer(open(os.path.join(dataPath, 'idm_log.csv'), 'w'))
 w_map = writer(open(os.path.join(dataPath, 'idm_map.csv'), 'w'))
