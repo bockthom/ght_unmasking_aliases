@@ -86,7 +86,7 @@ for row in reader:
     except:
         print(row)
         exit()
-    
+
     unmask[raw[uid]] = raw[uid]
 
     record_type = USR_REAL
@@ -95,7 +95,7 @@ for row in reader:
 #         record_type = USR_FAKE
 #     else:
 #         record_type = USR_REAL
-    
+
     a = Alias(record_type, uid, login, name, email, location, user_type)
     aliases[uid] = a
 
@@ -104,7 +104,7 @@ for row in reader:
     if a.email is not None:
         d_email_uid.setdefault(a.email, set([a.uid]))
         d_email_uid[a.email].add(a.uid)
-        
+
     # - prefix
     d_uid_prefix[a.uid] = a.email_prefix
     d_uid_comp_prefix[a.uid] = a.email_prefix
@@ -115,42 +115,42 @@ for row in reader:
         else:
             d_prefix_uid.setdefault(a.email_prefix, set([a.uid]))
             d_prefix_uid[a.email_prefix].add(a.uid)
-        
+
     # - domain
     d_uid_domain[a.uid] = a.email_domain
     if a.email_domain is not None:
         d_domain_uid.setdefault(a.email_domain, set([a.uid]))
         d_domain_uid[a.email_domain].add(a.uid)
-    
+
     # - login
     d_uid_login[a.uid] = a.login
     if a.login is not None:
         d_login_uid.setdefault(a.login, set([a.uid]))
         d_login_uid[a.login].add(a.uid)
-        
+
         if a.record_type == USR_REAL:
             d_login_uid.setdefault(a.login.lower(), set([a.uid]))
             d_login_uid[a.login.lower()].add(a.uid)
-    
+
     # type
     d_uid_type[a.uid] = a.usr_type
-    
+
     # - name
     d_uid_name[a.uid] = a.name
     if a.name is not None and len(a.name):
         d_name_uid.setdefault(a.name, set([a.uid]))
         d_name_uid[a.name].add(a.uid)
-        
+
         if len(a.name.split(' ')) == 1:
             d_name_uid.setdefault(a.name.lower(), set([a.uid]))
             d_name_uid[a.name.lower()].add(a.uid)
-        
+
     # - location
     d_uid_location[a.uid] = a.location
     if a.location is not None and len(a.location):
         d_location_uid.setdefault(a.location, set([a.uid]))
         d_location_uid[a.location].add(a.uid)
-        
+
     idx += 1
     if idx >= curidx:
         print(curidx/step)
@@ -166,9 +166,9 @@ for email, set_uid in d_email_uid.items():
             clues.setdefault((a, b), [])
             clues[(a, b)].append(EMAIL)
 #                print(a,b,EMAIL)
-            
+
 print('Done: email')
-            
+
 for prefix, set_uid in d_comp_prefix_uid.items():
     if len(set_uid) > THR_MIN and len(set_uid) < THR_MAX:
         if len(prefix) >= 3:
@@ -177,7 +177,7 @@ for prefix, set_uid in d_comp_prefix_uid.items():
                 clues[(a, b)].append(COMP_EMAIL_PREFIX)
 #                    print(a,b,COMP_EMAIL_PREFIX)
 
-print('Done: comp email prefix')             
+print('Done: comp email prefix')
 
 for prefix, set_uid in d_prefix_uid.items():
     if len(set_uid) > THR_MIN and len(set_uid) < THR_MAX:
@@ -186,9 +186,9 @@ for prefix, set_uid in d_prefix_uid.items():
                 clues.setdefault((a, b), [])
                 clues[(a, b)].append(SIMPLE_EMAIL_PREFIX)
 #                    print(a,b,SIMPLE_EMAIL_PREFIX)
-                
+
 print('Done: email prefix')
-                
+
 for prefix in set(d_prefix_uid.keys()).intersection(set(d_login_uid.keys())):
     if len(d_prefix_uid[prefix]) < THR_MAX:
         for a,b in product(sorted(d_login_uid[prefix], key=lambda uid:int(uid)), sorted(d_prefix_uid[prefix], key=lambda uid:int(uid))):
@@ -197,7 +197,7 @@ for prefix in set(d_prefix_uid.keys()).intersection(set(d_login_uid.keys())):
                 if not SIMPLE_EMAIL_PREFIX in clues[(a, b)]:
                     clues[(a, b)].append(PREFIX_LOGIN)
 #                    print(a,b,PREFIX_LOGIN)
-                
+
 print('Done: prefix=login')
 
 for prefix in set(d_prefix_uid.keys()).intersection(set(d_name_uid.keys())):
@@ -219,7 +219,7 @@ for prefix in set(d_login_uid.keys()).intersection(set(d_name_uid.keys())):
                     clues[(a, b)].append(LOGIN_NAME)
 
 print('Done: login=name')
-                
+
 for name, set_uid in d_name_uid.items():
     if len(set_uid) > THR_MIN and len(set_uid) < THR_MAX:
         if len(name.split(' ')) > 1:
@@ -230,7 +230,7 @@ for name, set_uid in d_name_uid.items():
             for a,b in combinations(sorted(set_uid, key=lambda uid:int(uid)), 2):
                 clues.setdefault((a, b), [])
                 clues[(a, b)].append(SIMPLE_NAME)
-                    
+
 print('Done: full/simple name')
 
 for domain, set_uid in d_domain_uid.items():
@@ -238,7 +238,7 @@ for domain, set_uid in d_domain_uid.items():
         for a,b in combinations(sorted(set_uid, key=lambda uid:int(uid)), 2):
             clues.setdefault((a, b), [])
             clues[(a, b)].append(DOMAIN)
-                
+
 print('Done: email domain')
 
 for location, set_uid in d_location_uid.items():
@@ -250,7 +250,7 @@ for location, set_uid in d_location_uid.items():
                 if len(d_name_uid.get(na, set([]))) < THR_MAX:
                     clues.setdefault((a, b), [])
                     clues[(a, b)].append(LOCATION)
-                
+
 print('Done: location')
 
 
@@ -259,7 +259,7 @@ clusters = {}
 labels = {}
 
 def merge(a,b,rule):
-    # Contract: a < b 
+    # Contract: a < b
     assert a<b, "A must be less than B"
     if a in d_alias_map.keys():
         if b in d_alias_map.keys():
@@ -276,7 +276,7 @@ def merge(a,b,rule):
                 del clusters[highest]
                 d_alias_map[a] = lowest
                 d_alias_map[b] = lowest
-            
+
         else:
             # a is an alias; first time I see b
             d_alias_map[b] = d_alias_map[a]
@@ -294,12 +294,12 @@ def merge(a,b,rule):
             d_alias_map[b] = a
             clusters[a] = set([a,b])
             labels[a] = [rule]
-    
-    
+
+
 for (a,b), list_clues in sorted(clues.items(), key=lambda e:(int(e[0][0]),int(e[0][1]))):
     aa = aliases[a]
     ab = aliases[b]
-    
+
     if EMAIL in list_clues:
         merge(a,b,EMAIL)
     elif len(set(list_clues)) >= 2:
@@ -312,24 +312,24 @@ for (a,b), list_clues in sorted(clues.items(), key=lambda e:(int(e[0][0]),int(e[
         merge(a,b,COMP_EMAIL_PREFIX)
     elif SIMPLE_NAME in list_clues:
         merge(a,b,SIMPLE_NAME)
-        
+
 
 print('Done: clusters')
-            
+
 for uid, member_uids in clusters.items():
     members = [aliases[m] for m in member_uids]
-    
+
     # Count fake/real
     c = Counter([m.record_type for m in members])
     real = [m for m in members if m.record_type==USR_REAL]
     with_location = [m for m in real if m.location is not None]
     fake = [m for m in members if m.record_type==USR_FAKE]
-    
+
     # Count rules that fired
     cl = Counter(labels[uid])
-    
+
     is_valid = False
-    
+
     # If all have the same email there is no doubt
     if cl.get(EMAIL,0) >= (len(members)-1):
         is_valid = True
@@ -342,7 +342,7 @@ for uid, member_uids in clusters.items():
     # At most one real, the only rule that fired is COMP_EMAIL_PREFIX or FULL_NAME
     elif len(real) <= 1 and len(cl.keys()) == 1 and \
             (cl.get(COMP_EMAIL_PREFIX,0) or cl.get(FULL_NAME,0)):
-        is_valid = True 
+        is_valid = True
     # All with same full name and location / same full name and email domain
     elif cl.get(FULL_NAME,0) >= (len(members)-1) and \
             (cl.get(LOCATION,0) >= (len(members)-1) or cl.get(DOMAIN,0) >= (len(members)-1)):
@@ -382,7 +382,7 @@ for uid, member_uids in clusters.items():
                         rep = sorted(extra_real, key=lambda m:int(m.uid))[0]
                 else:
                     rep = sorted(extra_members, key=lambda m:int(m.uid))[0]
-    
+
                 w_log.writerow([])
                 w_log.writerow([rep.uid, rep.login, rep.name, rep.email, rep.location])
                 for a in extra_members:
@@ -390,13 +390,13 @@ for uid, member_uids in clusters.items():
                         w_log.writerow([a.uid, a.login, a.name, a.email, a.location])
                         w_map.writerow([a.uid, rep.uid])
                         unmask[raw[a.uid]] = raw[rep.uid]
-        
-        
+
+
         w_maybe.writerow([])
         w_maybe.writerow([str(cl.items())])
         for m in members:
             w_maybe.writerow([m.uid, m.login, m.name, m.email, m.location])
-    
+
 
     if is_valid:
         # Determine group representative
